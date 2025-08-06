@@ -46,3 +46,10 @@ class ShippingAddress(models.Model):
 	def __str__(self):
 		return self.address
 	
+@property
+def imageURL(self):
+	try:
+		url = self.image.url
+	except:
+		url = ''
+	return url
