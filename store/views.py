@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-import datetime
 import json
-
+import datetime
 from .models import * 
 
 def store(request):
@@ -15,7 +14,7 @@ def store(request):
 	else:
 		#Create empty cart for now for non-logged in user
 		items = []
-		order = {'get_cart_total':0, 'get_cart_items':0}
+		order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
 		cartItems = order['get_cart_items']
 
 	products = Product.objects.all()
@@ -31,9 +30,40 @@ def cart(request):
 		cartItems = order.get_cart_items
 	else:
 		#Create empty cart for now for non-logged in user
+		try:
+			cart = json.loads(request.COOKIES['cart'])
+		except:
+			cart = {}
+			print('CART:', cart)
+
 		items = []
-		order = {'get_cart_total':0, 'get_cart_items':0}
+		order = {'get_cart_total':0, 'get_cart_items':0, 'shipping':False}
 		cartItems = order['get_cart_items']
+
+		for i in cart:
+			#We use try block to prevent items in cart that may have been removed from causing error
+			try:
+				cartItems += cart[i]['quantity']
+
+				product = Product.objects.get(id=i)
+				total = (product.price * cart[i]['quantity'])
+
+				order['get_cart_total'] += total
+				order['get_cart_items'] += cart[i]['quantity']
+
+				item = {
+					'id':product.id,
+					'product':{'id':product.id,'name':product.name, 'price':product.price, 
+					'imageURL':product.imageURL}, 'quantity':cart[i]['quantity'],
+					'digital':product.digital,'get_total':total,
+					}
+				items.append(item)
+
+				if product.digital == False:
+					order['shipping'] = True
+			except:
+				pass
+
 
 	context = {'items':items, 'order':order, 'cartItems':cartItems}
 	return render(request, 'store/cart.html', context)
@@ -87,9 +117,11 @@ def processOrder(request):
 		order, created = Order.objects.get_or_create(customer=customer, complete=False)
 		total = float(data['form']['total'])
 		order.transaction_id = transaction_id
+
 		if total == order.get_cart_total:
 			order.complete = True
 		order.save()
+
 		if order.shipping == True:
 			ShippingAddress.objects.create(
 			customer=customer,
