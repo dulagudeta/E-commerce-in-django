@@ -100,9 +100,9 @@
 	    })
 
 	    function submitFormData(){
-	    	console.log('Payment button clicked')
+			console.log('Payment button clicked')
 
-	    	var userFormData = {
+			var userFormData = {
 				'name':null,
 				'email':null,
 				'total':total,
@@ -116,20 +116,38 @@
 			}
 
 			if (shipping != 'False'){
-	    		shippingInfo.address = form.address.value
-		    	shippingInfo.city = form.city.value
-		    	shippingInfo.state = form.state.value
-		    	shippingInfo.zipcode = form.zipcode.value
-	    	}
+				shippingInfo.address = form.address.value
+				shippingInfo.city = form.city.value
+				shippingInfo.state = form.state.value
+				shippingInfo.zipcode = form.zipcode.value
+			}
 
-	    	if (user == 'AnonymousUser'){
-	    		userFormData.name = form.name.value
-	    		userFormData.email = form.email.value
-	    	}
+			if (user == 'AnonymousUser'){
+				userFormData.name = form.name.value
+				userFormData.email = form.email.value
+			}
 
-	    	console.log('Shipping Info:', shippingInfo)
-	    	console.log('User Info:', userFormData)
-	    }
+			console.log('Shipping Info:', shippingInfo)
+			console.log('User Info:', userFormData)
+
+			var url = "/process_order/"
+			fetch(url, {
+				method:'POST',
+				headers:{
+					'Content-Type':'applicaiton/json',
+					'X-CSRFToken':csrftoken,
+				}, 
+				body:JSON.stringify({'form':userFormData, 'shipping':shippingInfo}),
+				
+			})
+			.then((response) => response.json())
+			.then((data) => {
+				console.log('Success:', data);
+				alert('Transaction completed');  
+				window.location.href = "{% url 'store' %}"
+
+				})
+		}
 	</script>
 {% endblock content %}
 
