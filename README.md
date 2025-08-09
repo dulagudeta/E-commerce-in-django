@@ -73,7 +73,7 @@ The focus is to provide a seamless checkout experience with **no forced account 
 
 ## 💡 Motivation
 > "A good eCommerce website should always give the user the ability to checkout without creating an account."  
-> — Inspired by a tweet from April 2020  
+
 
 Forcing account creation can **reduce sales**. This project ensures **convenience** and **security** while maximizing user experience.
 
